@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Pixam</string>
+    <string name="capture">Capture</string>
+    <string name="cancel">Cancel</string>
+    <string name="scan_image">tap the screen to scan</string>
+    <string name="ok">OK</string>
+    <string name="back">Return</string>
+</resources>

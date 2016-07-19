@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gray"
+    tools:context="sun2people.electria.pixam.MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="64sp"
+        android:textColor="@color/white"
+        android:text="@string/app_name"
+        android:textAllCaps="true"/>
+
+    <LinearLayout
+        android:id="@+id/scan_view"
+        android:layout_width="match_parent"
+        android:layout_margin="40dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/black">
+
+        <TextView
+            android:id="@+id/start_scan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="32sp"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:text="@string/scan_image"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/ret_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@color/gray"
+        android:text="@string/back"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:visibility="gone"/>
+
+</LinearLayout>
