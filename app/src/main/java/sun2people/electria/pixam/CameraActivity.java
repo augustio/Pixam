@@ -23,11 +23,14 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class CameraActivity extends Activity {
@@ -44,7 +47,6 @@ public class CameraActivity extends Activity {
     private ImageView imgView;
     private FrameLayout previewLayout;
     private Bitmap mImgBitmap;
-    private Bitmap mCroppedImg;
     private ArrayList<Integer> mUserAnswers;
     private ArrayList<Bitmap> mSplitImgs;
     private Handler mHandler;
@@ -107,6 +109,7 @@ public class CameraActivity extends Activity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                imgView.setImageBitmap(null);
                 imgView.setVisibility(View.GONE);
                 previewLayout.setVisibility(View.VISIBLE);
                 captureButton.setVisibility(View.VISIBLE);
@@ -122,7 +125,7 @@ public class CameraActivity extends Activity {
             @Override
             public void onClick(View view) {
                 releaseCamera();
-                mSplitImgs = splitImage(mCroppedImg, mCols, mRows);
+                mSplitImgs = splitImage(mImgBitmap, mCols, mRows);
                 mUserAnswers = processImages(mSplitImgs);
                 Intent intent = new Intent();
                 intent.putIntegerArrayListExtra(EXTRA_USER_ANSWERS, mUserAnswers);
@@ -236,55 +239,54 @@ public class CameraActivity extends Activity {
     private void cropImage(){
         if(mImgBytes != null){
 
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
-            Bitmap bm = BitmapFactory.decodeByteArray(mImgBytes, 0, mImgBytes.length);
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, screenHeight, screenWidth, true);
-
-            mImgBitmap = rotate(scaled, getRoatationAngle(CameraActivity.this, 1));
-
-            imgView.setImageBitmap(mImgBitmap);
-
-            Mat src, src_gray;
-            Mat detected_edges;
+            Mat src = new Mat();
+            Mat grayImg = new Mat();
+            Mat filteredGray = new Mat();
             Mat mHierarchy = new Mat();
             List<MatOfPoint> contours = new ArrayList<>();
-
-            int lowThreshold = 20;
-            int ratio = 3;
-            int idx = 0;
+            int lowThreshold = 5;
+            int ratio = 10;
             double maxArea = 0;
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            int screenHeight = getResources().getDisplayMetrics().heightPixels;
 
-            src = new Mat();
-            src_gray = src.clone();
-            detected_edges = src_gray.clone();
-            Utils.bitmapToMat(mImgBitmap, src);
-            Imgproc.cvtColor(src, src_gray, Imgproc.COLOR_BGR2GRAY );
-            Imgproc.blur( src_gray, detected_edges, new Size(3,3) );
-            Imgproc.Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio);
-            Imgproc.findContours(detected_edges, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Bitmap tempBitmap = BitmapFactory.decodeByteArray(mImgBytes, 0, mImgBytes.length);
 
-            src_gray.release();
-            detected_edges.release();
+            Utils.bitmapToMat(tempBitmap, src);
+            Imgproc.cvtColor(src, grayImg, Imgproc.COLOR_BGRA2GRAY );
+            Imgproc.bilateralFilter(grayImg, filteredGray, 11, 17, 17);
+            Imgproc.Canny( filteredGray, grayImg, lowThreshold, lowThreshold*ratio);
+            Imgproc.findContours(grayImg, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            for(MatOfPoint c : contours){
-                double area = Imgproc.contourArea(c);
-                if(area > maxArea){
+            grayImg.release();
+            filteredGray.release();
+
+            Iterator<MatOfPoint> each = contours.iterator();
+            while (each.hasNext()) {
+                MatOfPoint wrapper = each.next();
+                double area = Imgproc.contourArea(wrapper);
+                if(area > maxArea)
                     maxArea = area;
-                    idx = contours.indexOf(c);
+            }
+            MatOfPoint maxContour = null;
+            for(MatOfPoint c : contours){
+                if(Imgproc.contourArea(c) == maxArea) {
+                    maxContour = c;
                 }
             }
 
-            if(contours.size() > 0) {
-                Rect rect = Imgproc.boundingRect(contours.get(idx));
+            if(maxContour != null) {
+                Rect rect = Imgproc.boundingRect(maxContour);
                 Mat ROI = src.submat(rect.y, rect.y + rect.height, rect.x, rect.x + rect.width);
-                mCroppedImg = Bitmap.createBitmap(ROI.cols(), ROI.rows(),Bitmap.Config.ARGB_8888);
-                Utils.matToBitmap(ROI, mCroppedImg);
-
+                Bitmap cropped = Bitmap.createBitmap(ROI.cols(), ROI.rows(),Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(ROI, cropped);
                 ROI.release();
-
-                imgView.setImageBitmap(mCroppedImg);
+                Bitmap scaled = Bitmap.createScaledBitmap(cropped, screenHeight, screenWidth, true);
+                mImgBitmap = rotate(scaled, getRoatationAngle(CameraActivity.this, 1));
+                imgView.setImageBitmap(mImgBitmap);
             }
+
+            src.release();
 
             imgView.setVisibility(View.VISIBLE);
             previewLayout.setVisibility(View.GONE);
@@ -325,10 +327,11 @@ public class CameraActivity extends Activity {
                     maxIndex = i;
                 }
                 if(((i + 1) % mCols) == 0){
-                    max = 0;
                     int indx = maxIndex % mCols;
-                    Log.w("Scanner", "result: "+ indx);
+                    Log.w("Max " + maxIndex%mCols, ": " + max);
                     result.add(indx);
+
+                    max = 0;
                 }
             }
             return result;

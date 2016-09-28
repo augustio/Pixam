@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    tools:context="sun2people.electria.pixam.MainActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textSize="64sp"
+            android:textColor="@color/white"
+            android:text="@string/title"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/menu_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/menu"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/scan_view"
+        android:layout_width="match_parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/darkGray">
+
+        <TextView
+            android:id="@+id/start_scan"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/camera"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/ret_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@color/gray"
+        android:text="@string/back"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:visibility="gone"/>
+
+</LinearLayout>

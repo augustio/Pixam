@@ -4,97 +4,32 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import java.util.ArrayList;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
 
 public class MainActivity extends Activity {
-
-    private static final int STATE_DISPLAY_SCORE = 1;
-    private static final int STATE_SCAN_IMAGE = 0;
-
-    private TextView scanText, retBtn;
-    private LinearLayout scanView;
-    private ArrayList<Integer> mUserAnsers;
-    private Test mTest;
-    private int mState;
-    private float mTestScore;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mState = STATE_SCAN_IMAGE;
-        int[] arr = {2, 4, 0, 2, 3, 1, 1, 4, 4, 3};
-        ArrayList<Integer> answers = new ArrayList<>();
-        for(int i = 0; i < 10; i++)
-            answers.add((arr[i]));
-        mTest = new Test(10, 5, answers);
+        final String subjects[] = {"English", "Maths", "Physics", "Chemistry", "Biology", "Literature",
+                "Economics", "Geography"};
 
-        scanText = (TextView) findViewById(R.id.start_scan);
-        retBtn = (TextView) findViewById(R.id.ret_btn);
-        scanView = (LinearLayout) findViewById(R.id.scan_view);
-        scanView.setOnClickListener(new View.OnClickListener() {
+        ArrayAdapter<String> subjectListAdapter =
+                new ArrayAdapter<>(this, R.layout.subject_view, subjects);
+
+        final GridView subjectsView = (GridView) findViewById(R.id.subject_list);
+        subjectsView.setAdapter(subjectListAdapter);
+
+        subjectsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
-                intent.putExtra(CameraActivity.IMAGE_PARAMETERS, mTest.getNumberOfOptions()+
-                "-"+mTest.getNumberOfQuestions());
-                startActivityForResult(intent, CameraActivity.SCAN_IMAGE_REQUEST);
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(MainActivity.this, ExamActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, subjects[i]);
+                startActivity(intent);
             }
         });
-
-        retBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                returnToScan();
-            }
-        });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == CameraActivity.SCAN_IMAGE_REQUEST ){
-            if(resultCode == RESULT_OK){
-                mUserAnsers = data.getIntegerArrayListExtra(CameraActivity.EXTRA_USER_ANSWERS);
-                mTestScore = scoreUser(mTest.getAnswers(), mUserAnsers);
-                String scoreStr = mTestScore + "% of answers are correct";
-                scanText.setText(scoreStr);
-                retBtn.setVisibility(View.VISIBLE);
-                scanView.setClickable(false);
-                mState = STATE_DISPLAY_SCORE;
-            }
-        }
-    }
-
-    private float scoreUser(ArrayList<Integer> testAnswers, ArrayList<Integer> userAnswers){
-        if(testAnswers.size() != userAnswers.size())
-            return 0;
-        float score = 0;
-        for(int i = 0; i < testAnswers.size(); i++){
-            if(testAnswers.get(i).equals(userAnswers.get(i))){
-                score++;
-            }
-        }
-        score = score*100/testAnswers.size();
-        return score;
-    }
-
-    private void returnToScan(){
-        mState = STATE_SCAN_IMAGE;
-        scanText.setText(R.string.scan_image);
-        scanView.setClickable(true);
-        retBtn.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if(mState == STATE_DISPLAY_SCORE){
-            returnToScan();
-        }
-        else
-            super.onBackPressed();
     }
 }
