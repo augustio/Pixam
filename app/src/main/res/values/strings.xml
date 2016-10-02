@@ -6,4 +6,21 @@
     <string name="ok">OK</string>
     <string name="back">Return</string>
     <string name="title">pixam</string>
+
+    <string name="instruction">"
+        <b>Instructions for preparing
+        the exam:</b>\n\n
+
+        1. Ask pupils to prepare the
+        answer sheets.\n
+
+        2. Select the exam template\n
+
+        3. Write the exam questions
+        on the black board or read
+        the questions\n
+
+        4. Scan the results\n
+
+        5. Give feedback"</string>
 </resources>

@@ -10,6 +10,8 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 public class ExamActivity extends Activity {
+
+    private String mSubject;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,17 +24,19 @@ public class ExamActivity extends Activity {
 
         TextView examsTitle = (TextView)findViewById(R.id.exams_title);
         Intent intent = getIntent();
-        String title = intent.getStringExtra(Intent.EXTRA_TEXT);
-        examsTitle.setText(title);
+        mSubject = intent.getStringExtra(Intent.EXTRA_TEXT);
+        examsTitle.setText(mSubject);
 
         GridView examsView = (GridView) findViewById(R.id.exam_list);
         examsView.setAdapter(subjectListAdapter);
         examsView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(ExamActivity.this, ExamDetailActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, exams[i]);
-                startActivity(intent);
+                if(i == 0) {
+                    Intent intent = new Intent(ExamActivity.this, ExamDetailActivity.class);
+                    intent.putExtra(Intent.EXTRA_TEXT, mSubject + "_" + exams[i]);
+                    startActivity(intent);
+                }
             }
         });
     }

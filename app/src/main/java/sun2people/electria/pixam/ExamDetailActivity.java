@@ -4,97 +4,87 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import java.util.ArrayList;
 
 public class ExamDetailActivity extends Activity {
 
-    private static final int STATE_DISPLAY_SCORE = 1;
-    private static final int STATE_SCAN_IMAGE = 0;
+    private static final int QUESTION_DISPLAY = 0;
+    private static final int INSTRUCTION_DISPLAY = 1;
 
-    private TextView scanText, retBtn;
-    private RelativeLayout scanView;
-    private ArrayList<Integer> mUserAnsers;
-    private Test mTest;
     private int mState;
-    private float mTestScore;
+    private LinearLayout questionView, instructionView;
+    private TextView questionItem, questionNum, startButton, nextButton;
+    private String mExamTitle, mQuestions[];
+    private int mNextQuestion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exam_detail);
 
-        mState = STATE_SCAN_IMAGE;
-        int[] arr = {2, 4, 0, 2, 3, 1, 1, 4, 4, 3};
-        ArrayList<Integer> answers = new ArrayList<>();
-        for(int i = 0; i < 10; i++)
-            answers.add((arr[i]));
-        mTest = new Test(10, 5, answers);
+        questionView = (LinearLayout) findViewById(R.id.question);
+        instructionView = (LinearLayout) findViewById(R.id.instruction);
+        questionItem = (TextView) findViewById(R.id.question_item);
+        questionNum = (TextView) findViewById(R.id.question_num);
+        startButton = (TextView) findViewById(R.id.start_exam);
+        nextButton = (TextView) findViewById(R.id.next_btn);
+        questionView.setVisibility(View.GONE);
 
-        scanText = (TextView) findViewById(R.id.start_scan);
-        retBtn = (TextView) findViewById(R.id.ret_btn);
-        scanView = (RelativeLayout) findViewById(R.id.scan_view);
-        scanView.setOnClickListener(new View.OnClickListener() {
+        mNextQuestion = 0;
+
+        mState = INSTRUCTION_DISPLAY;
+
+        mQuestions = new String[10];
+        for(int i = 0; i < mQuestions.length; i++){
+            String q = "\nWhich of the following is not a discipline in" +
+                    " Chemistry? \n\n a) organic \n\n b)biochemistry \n\n" +
+                    "c) molecular \n\n d)analytical \n\n e) none of the above?";
+            mQuestions[i] = q;
+        }
+
+        Intent intent = getIntent();
+        mExamTitle = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+        startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ExamDetailActivity.this, CameraActivity.class);
-                intent.putExtra(CameraActivity.IMAGE_PARAMETERS, mTest.getNumberOfOptions()+
-                "-"+mTest.getNumberOfQuestions());
-                startActivityForResult(intent, CameraActivity.SCAN_IMAGE_REQUEST);
+                instructionView.setVisibility(View.GONE);
+                String str = (mNextQuestion +1) + "/" + mQuestions.length;
+                questionNum.setText(str);
+                questionItem.setText(mQuestions[mNextQuestion]);
+                mNextQuestion++;
+                mState = QUESTION_DISPLAY;
+                instructionView.setVisibility(View.GONE);
+                questionView.setVisibility(View.VISIBLE);
             }
         });
 
-        retBtn.setOnClickListener(new View.OnClickListener() {
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                returnToScan();
+                if(mNextQuestion < mQuestions.length){
+                    String str = (mNextQuestion +1) + "/" + mQuestions.length;
+                    questionNum.setText(str);
+                    questionItem.setText(mQuestions[mNextQuestion]);
+                    mNextQuestion++;
+                }else{
+                    mNextQuestion = 0;
+                    Intent intent = new Intent(ExamDetailActivity.this, EvaluateExam.class);
+                    intent.putExtra(Intent.EXTRA_TEXT, mExamTitle);
+                    startActivity(intent);
+                }
             }
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == CameraActivity.SCAN_IMAGE_REQUEST ){
-            if(resultCode == RESULT_OK){
-                mUserAnsers = data.getIntegerArrayListExtra(CameraActivity.EXTRA_USER_ANSWERS);
-                mTestScore = scoreUser(mTest.getAnswers(), mUserAnsers);
-                String scoreStr = mTestScore + "% of answers are correct";
-                scanText.setText(scoreStr);
-                retBtn.setVisibility(View.VISIBLE);
-                scanView.setClickable(false);
-                mState = STATE_DISPLAY_SCORE;
-            }
-        }
-    }
-
-    private float scoreUser(ArrayList<Integer> testAnswers, ArrayList<Integer> userAnswers){
-        if(testAnswers.size() != userAnswers.size())
-            return 0;
-        float score = 0;
-        for(int i = 0; i < testAnswers.size(); i++){
-            if(testAnswers.get(i).equals(userAnswers.get(i))){
-                score++;
-            }
-        }
-        score = score*100/testAnswers.size();
-        return score;
-    }
-
-    private void returnToScan(){
-        mState = STATE_SCAN_IMAGE;
-        scanText.setText(R.string.scan_image);
-        scanView.setClickable(true);
-        retBtn.setVisibility(View.GONE);
     }
 
     @Override
     public void onBackPressed() {
-        if(mState == STATE_DISPLAY_SCORE){
-            returnToScan();
-        }
-        else
+        if(mState == QUESTION_DISPLAY){
+            mState = INSTRUCTION_DISPLAY;
+            questionView.setVisibility(View.GONE);
+            instructionView.setVisibility(View.VISIBLE);
+        }else
             super.onBackPressed();
     }
 }

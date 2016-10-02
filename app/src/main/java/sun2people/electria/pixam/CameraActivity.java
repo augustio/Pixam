@@ -244,7 +244,7 @@ public class CameraActivity extends Activity {
             Mat filteredGray = new Mat();
             Mat mHierarchy = new Mat();
             List<MatOfPoint> contours = new ArrayList<>();
-            int lowThreshold = 5;
+            int lowThreshold = 3;
             int ratio = 10;
             double maxArea = 0;
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
