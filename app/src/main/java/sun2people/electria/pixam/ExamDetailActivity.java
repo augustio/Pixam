@@ -35,11 +35,11 @@ public class ExamDetailActivity extends Activity {
 
         mState = INSTRUCTION_DISPLAY;
 
-        mQuestions = new String[10];
+        mQuestions = new String[20];
         for(int i = 0; i < mQuestions.length; i++){
             String q = "\nWhich of the following is not a discipline in" +
                     " Chemistry? \n\n a) organic \n\n b)biochemistry \n\n" +
-                    "c) molecular \n\n d)analytical \n\n e) none of the above?";
+                    "c) molecular \n\n d)analytical";
             mQuestions[i] = q;
         }
 
@@ -82,6 +82,7 @@ public class ExamDetailActivity extends Activity {
     public void onBackPressed() {
         if(mState == QUESTION_DISPLAY){
             mState = INSTRUCTION_DISPLAY;
+            mNextQuestion = 0;
             questionView.setVisibility(View.GONE);
             instructionView.setVisibility(View.VISIBLE);
         }else

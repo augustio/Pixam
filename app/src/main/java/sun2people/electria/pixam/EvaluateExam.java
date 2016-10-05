@@ -35,9 +35,9 @@ public class EvaluateExam extends Activity {
 
         mState = STATE_DISPLAY_STUDENT_LIST;
         ArrayList<Integer> answers = new ArrayList<>();
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 20; i++)
             answers.add(0);
-        mTest = new Test(10, 5, answers);
+        mTest = new Test(20, 4, answers);
 
         studentList = (ListView) findViewById(R.id.student_list);
         scanView = (RelativeLayout) findViewById(R.id.scan_view);
